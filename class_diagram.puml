@@ -1,0 +1,93 @@
+@startuml
+' Define User class with roles
+class User {
+  - id: int
+  - name: string
+  - email: string
+  - password: string
+  - role: enum {SuperAdmin, Administrator, Agent, Member}
+  - referred_by_agent_id: int?
+  + register()
+  + login()
+  + subscribe(subscription: Subscription)
+  + isSubscribed(): bool
+}
+
+' Membership class for agent/admin registration
+class Membership {
+  - id: int
+  - user_id: int
+  - membership_type: enum {Agent, Administrator}
+  - registered_at: datetime
+  + registerMember()
+}
+
+' Subscription class
+class Subscription {
+  - id: int
+  - user_id: int
+  - subscription_type: enum {Monthly, Annual}
+  - start_date: date
+  - end_date: date
+  - status: enum {Active, Expired, Cancelled}
+  - payment_id: int
+  + isActive(): bool
+  + expire()
+}
+
+' Payment class for MPESA transactions
+class Payment {
+  - id: int
+  - user_id: int
+  - amount: decimal
+  - payment_date: datetime
+  - payment_method: enum {MPESA}
+  - transaction_code: string
+  - status: enum {Pending, Completed, Failed}
+  + processPayment()
+}
+
+' Commission class for agent commissions
+class Commission {
+  - id: int
+  - agent_id: int
+  - total_referred_members: int
+  - total_revenue_generated: decimal
+  - commission_rate: decimal
+  - commission_amount: decimal
+  + calculateCommission()
+  + assignCommission()
+}
+
+' Property class for rental houses
+class Property {
+  - id: int
+  - agent_id: int
+  - title: string
+  - description: string
+  - price: decimal
+  - location: string
+  - pin_location: string
+  - contact_info: string
+  - is_public: bool
+  + viewDetails(user: User)
+}
+
+' Relationships
+User "1" -- "0..*" Membership : has
+User "1" -- "0..*" Subscription : has
+User "1" -- "0..*" Payment : makes
+Agent "1" -- "0..*" Commission : earns
+Agent "1" -- "0..*" Property : lists
+User "0..1" -- "0..1" User : referred_by_agent
+
+' Notes for API and Dashboards
+note right of User
+  RESTful API accessible via Android/iOS apps
+  Roles determine dashboard access:
+  - SuperAdmin: full control
+  - Administrator: manage agents
+  - Agent: manage members and subscriptions
+end note
+
+@enduml
